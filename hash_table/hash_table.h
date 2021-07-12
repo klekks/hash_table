@@ -1,0 +1,38 @@
+#pragma once
+
+#define HASH unsigned long long
+#define HT_INT unsigned
+#define DEBUG 
+
+#define DEFAULT_OCCUPANCY 0.5f
+#define OCCUPANCY_MIN 0.25f
+#define OCCUPANCY_MAX 0.75f
+
+#define MIN_TABLE_SIZE 17
+
+typedef struct {
+	void* data;
+	HASH first_hash;
+	HASH second_hash;
+} HTObject;
+
+typedef struct {
+	HTObject* table;
+	HT_INT size;    // the number of $table cells 
+	HT_INT deleted; // the number of deleted objects
+	HT_INT objects; // the number of valid objects
+	HASH (*first_hash_function) (void*);
+	HASH (*second_hash_function)(void*);
+	float max_occupancy; // if (float) 
+						 // ($deleted + $objects) / $size > $max_occupancy 
+						 // then resize
+						 // OCCUPANCY_MIN <= &max_occupancy <= OCCUPANCY_MAX
+} HashTable;
+
+HashTable* NewHashTable(HT_INT size,
+					    HASH(*first_hash_function) (void*),
+					    HASH(*second_hash_function)(void*),
+					    float max_occupancy);
+
+HASH DEFAULT_FIRST_HASH(void* obj);
+HASH DEFAULT_SECOND_HASH(void* obj);
