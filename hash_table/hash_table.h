@@ -42,11 +42,11 @@ HT_INT HashTableAdd(HashTable *table,
 					HT_INT key_size, 
 					void* data);
 
-HT_INT HashTableFind(HashTable *table, 
+void* HashTableFind(HashTable *table, 
 					 void* key, 
 					 HT_INT key_size);
 
-HT_INT HashTableRemove(HashTable *table,
+void* HashTableRemove(HashTable *table,
 					   void* key,
 					   HT_INT key_size);
 
