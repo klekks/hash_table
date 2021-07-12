@@ -12,7 +12,6 @@
 
 typedef struct {
 	void* data;
-	HT_INT data_size;
 	HASH first_hash;
 	HASH second_hash;
 } HTObject;
@@ -38,8 +37,7 @@ HashTable* NewHashTable(HT_INT size,
 HT_INT HashTableAdd(HashTable *table, 
 					void* key, 
 					HT_INT key_size, 
-					void* data, 
-					HT_INT data_size);
+					void* data);
 
 HT_INT HashTableFind(HashTable *table, 
 					 void* key, 
