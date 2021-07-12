@@ -12,6 +12,9 @@
 #define MIN(A, B) A > B ? B : A
 #define MAX(A, B) A < B ? B : A
 
+#define HT_OVERFLOW(T) (((float)T->objects + T->deleted) / T->size) > T->max_occupancy
+#define HT_OVERFLOW_NEW_SIZE(T) T->objects * 2
+
 HT_INT is_prime(HT_INT N) {
 	if (N == 2 || N == 3 || N == 5 || N == 7) return 1;
 	if (N % 2 == 0) return 0;
@@ -42,7 +45,7 @@ HashTable* NewHashTable(HT_INT size,
 
 	if (size < MIN_TABLE_SIZE) size = MIN_TABLE_SIZE;
 	
-	table->table = calloc(size, sizeof(HTObject));
+	table->table = calloc(size, sizeof(HTObject*));
 	if (!table->table) {
 		free(table);
 		return NULL;
@@ -61,6 +64,36 @@ HashTable* NewHashTable(HT_INT size,
 	return table;
 }
 
+
+HT_INT HashTableAdd(HashTable* table,
+					void* key,
+					HT_INT key_size,
+					void* data) {
+
+	if (!table || !key || !key_size) return 0;
+
+	if (HT_OVERFLOW(table))
+		if (HashTableResize(table, HT_OVERFLOW_NEW_SIZE(table))) return 0;
+
+	HASH hash = table->first_hash_function(key, key_size),
+		 second_hash = table->second_hash_function(key, key_size);
+
+	HTObject* obj = calloc(1, sizeof(HTObject));
+	if (!obj) return 0;
+
+	obj->data = data;
+	obj->first_hash = hash;
+	obj->second_hash = second_hash;
+	obj->key = key;
+	obj->key_size = key_size;
+
+	while (table->table[hash]) hash = (hash + second_hash) % table->size;
+
+	table->table[hash] = obj;
+
+	return hash;
+}
+
 int main() {
 	int n = 0;
 	while (1) {
@@ -69,5 +102,7 @@ int main() {
 	}
 }
 
+#undef HT_OVERFLOW
 #undef MIN
 #undef MAX
+#undef _CRT_SECURE_NO_WARNINGS
