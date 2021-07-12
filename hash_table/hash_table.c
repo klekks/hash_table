@@ -61,19 +61,6 @@ HashTable* NewHashTable(HT_INT size,
 	return table;
 }
 
-
-HT_INT HashTableAdd(HashTable* table,
-					void* key,
-					HT_INT key_size,
-					void* data,
-					HT_INT data_size) {
-
-	if (!table || !key) return 0;
-
-	HASH first_hash = table->first_hash_function(key, key_size);
-	HASH second_hash = table->second_hash_function(key, key_size);
-}
-
 int main() {
 	int n = 0;
 	while (1) {
