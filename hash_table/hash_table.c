@@ -13,10 +13,6 @@
 #define MIN(A, B) A > B ? B : A
 #define MAX(A, B) A < B ? B : A
 
-#define HT_OVERFLOW(T) (((float)T->objects + T->deleted) / T->size) > T->max_occupancy
-#define HT_OVERFLOW_NEW_SIZE(T) T->objects * 2
-#define HT_OBJ(T, H) T->table[H]
-
 HT_INT is_prime(HT_INT N) {
 	if (N == 2 || N == 3 || N == 5 || N == 7) return 1;
 	if (N % 2 == 0) return 0;
@@ -36,6 +32,14 @@ HT_INT next_prime(HT_INT N) {
 
 	return M <= N ? 0 : M;
 }
+
+#define HT_OVERFLOW(T) (((float)T->objects + T->deleted) / T->size) > T->max_occupancy
+#define HT_OVERFLOW_NEW_SIZE(T) next_prime(T->objects * 2)
+
+#define HT_UNDERFLOW(T) ((float)T->objects / T->size) < (T->max_occupancy / 2)
+#define HT_UNDERFLOW_NEW_SIZE(T) next_prime(T->objects / 2 + 1)
+
+#define HT_OBJ(T, H) T->table[H]
 
 HashTable* NewHashTable(HT_INT size,
 						HASH(*first_hash_function) (void*),
@@ -135,6 +139,10 @@ void* HashTableRemove(HashTable* table,
 
 	free(obj->key);
 	free(obj);
+
+	if (HT_UNDERFLOW(table))
+		HashTableResize(table, HT_UNDERFLOW_NEW_SIZE(table));
+
 	return data;
 }
 
