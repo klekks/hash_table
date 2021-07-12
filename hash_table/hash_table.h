@@ -22,8 +22,8 @@ typedef struct {
 	HT_INT size;    // the number of $table cells 
 	HT_INT deleted; // the number of deleted objects
 	HT_INT objects; // the number of valid objects
-	HASH (*first_hash_function) (void*);
-	HASH (*second_hash_function)(void*);
+	HASH (*first_hash_function) (void*, HT_INT);
+	HASH (*second_hash_function)(void*, HT_INT);
 	float max_occupancy; // if (float) 
 						 // ($deleted + $objects) / $size > $max_occupancy 
 						 // then resize
@@ -51,5 +51,5 @@ HT_INT HashTableRemove(HashTable *table,
 
 HT_INT HashTableResize(HashTable* table);
 
-HASH DEFAULT_FIRST_HASH(void* obj);
-HASH DEFAULT_SECOND_HASH(void* obj);
+HASH DEFAULT_FIRST_HASH(void* obj, HT_INT size);
+HASH DEFAULT_SECOND_HASH(void* obj, HT_INT size);
