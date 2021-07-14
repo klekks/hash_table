@@ -33,10 +33,16 @@ HT_INT next_prime(HT_INT N) {
 	return M <= N ? 0 : M;
 }
 
+/*
+* The table should be enlarged if there are at least half of the filled cells
+*/
 #define HT_OVERFLOW(T) (((float)T->objects + T->deleted) / T->size) > T->max_occupancy
 #define HT_OVERFLOW_NEW_SIZE(T) (T->size - T->deleted) * 2
 
-#define HT_UNDERFLOW(T) ((float)T->objects / T->size) < (T->max_occupancy / 2)
+/*
+* The table should be reduced if there are more deleted elements than real ones
+*/
+#define HT_UNDERFLOW(T) T->deleted > T->objects
 #define HT_UNDERFLOW_NEW_SIZE(T) next_prime(T->objects / 2 + 1)
 
 #define HT_OBJ(T, H) T->table[H % T->size]
@@ -104,10 +110,10 @@ HT_INT HashTableAdd(HashTable* table,
 	obj->key_size = key_size;
 
 	while (HT_OBJ(table, hash)) 
-		hash = hash + second_hash;
+		hash += second_hash;
 	
 
-	table->table[hash] = obj;
+	HT_OBJ(table, hash) = obj;
 	table->objects++;
 
 	return hash;
@@ -122,15 +128,15 @@ HTObject* _HashTableFindObject(HashTable *table, void* key, HT_INT key_size) {
 
 	while (1) {
 		if (!HT_OBJ(table, hash)) return NULL;
-		else
+		else 
+			if (HT_OBJ(table, hash)->key && HT_OBJ(table, hash)->key_size == key_size)
 			if (HT_OBJ(table, hash)->first_hash == first_hash &&
-				HT_OBJ(table, hash)->second_hash == second_hash &&
-				HT_OBJ(table, hash)->key_size == key_size)
+				HT_OBJ(table, hash)->second_hash == second_hash)
 				if (!memcmp(HT_OBJ(table, hash)->key, key, key_size)) {
 					obj = HT_OBJ(table, hash);
 					break;
 				}
-		hash = (hash + second_hash) % table->size;
+		hash += second_hash;
 	}
 
 	if (!obj || !obj->key) return NULL;
@@ -251,7 +257,7 @@ HASH DEFAULT_SECOND_HASH(void* obj, HT_INT size) {
 
 
 int main() {
-	int n = 0, *t;
+	int n = 0, *t, *val;
 	HASH h;
 	char key;
 	HashTable* table = NewHashTable(0, 0, 0, 0);
@@ -259,12 +265,15 @@ int main() {
 		scanf("%c %d", &key, &n);
 		switch (key) {
 		case 'a': 
-			h = HashTableAdd(table, &n, sizeof(n), n);
+			val = calloc(1, sizeof(int));
+			*val = n;
+			h = HashTableAdd(table, &n, sizeof(n), val);
 			printf("%u\n", h);
 			break;
 		case 'r':
 			t = HashTableRemove(table, &n, sizeof(n));
 			printf("%d %d\n", t, t ? *t : t);
+			free(t);
 			break;
 		case 'f':
 			t = HashTableFind(table, &n, sizeof(n));
