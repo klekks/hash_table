@@ -132,6 +132,8 @@ HTObject* _HashTableFindObject(HashTable *table, void* key, HT_INT key_size) {
 	}
 
 	if (!obj || !obj->key) return NULL;
+
+	return obj;
 }
 
 void* HashTableRemove(HashTable* table,
