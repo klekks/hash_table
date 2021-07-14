@@ -172,12 +172,12 @@ void* HashTableFind(HashTable* table,
 
 HT_INT HashTableResize(HashTable* table, HT_INT new_size) {
 
-	if (!table) return 0;
+	if (!table || !table->table) return 0;
 
 	new_size = is_prime(new_size) ? new_size : next_prime(new_size);
 
 	if (new_size < MIN_TABLE_SIZE) return 0;
-
+	if (table->size == new_size) return 0;
 	/*
 	* We can't get less space in the table than is necessary for storing data.
 	* So, if $table->objects / $new_size >= $table->max_occupancy
@@ -186,27 +186,32 @@ HT_INT HashTableResize(HashTable* table, HT_INT new_size) {
 
 	if ((float)table->objects / new_size >= table->max_occupancy) return 0;
 
-	if (table->size == new_size) return 0;
 
-	HTObject** old_tbl = table->table;
+	HashTable tmp_tbl = {
+		calloc(new_size, sizeof(HTObject*)),
+		new_size,
+		0, // objects
+		0, // deleted
+		table->first_hash_function,
+		table->second_hash_function,
+		table->max_occupancy
+	};
 
-	HTObject** new_tbl = calloc(new_size, sizeof(HTObject*));
-	if (!new_tbl) return 0;
-	table->table = new_tbl;
-	HT_INT old_size = table->size;
-	table->size = new_size;
-	table->deleted = 0;
-	table->objects = 0;
 
-	printf("RESIZE: NEW SIZE %d OLD SIZE %d\n", new_size, old_size);
-	for (HT_INT cell = 0; cell < old_size; cell++) {
-		if (!old_tbl[cell]) continue;
-		if (!old_tbl[cell]->key) free(old_tbl[cell]);
+	printf("RESIZE: NEW SIZE %d OLD SIZE %d\n", new_size, table->size);
+
+	for (HT_INT cell = 0; cell < table->size; cell++)
+		if (!HT_OBJ(table, cell)) continue;
+		else if (!HT_OBJ(table, cell)->key) free(HT_OBJ(table, cell));
 		else {
-			HashTableAdd(table, old_tbl[cell]->key, old_tbl[cell]->key_size, old_tbl[cell]->data);
-			free(old_tbl[cell]->key);
+			HashTableAdd(&tmp_tbl, HT_OBJ(table, cell)->key, 
+						 HT_OBJ(table, cell)->key_size, HT_OBJ(table, cell)->data);
+			free(HT_OBJ(table, cell)->key);
 		}
-	}
+
+	free(table->table);
+
+	*table = tmp_tbl;
 
 	return new_size;
 }
