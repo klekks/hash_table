@@ -39,7 +39,7 @@ HT_INT next_prime(HT_INT N) {
 #define HT_UNDERFLOW(T) ((float)T->objects / T->size) < (T->max_occupancy / 2)
 #define HT_UNDERFLOW_NEW_SIZE(T) next_prime(T->objects / 2 + 1)
 
-#define HT_OBJ(T, H) T->table[H]
+#define HT_OBJ(T, H) T->table[H % T->size]
 
 HashTable* NewHashTable(HT_INT size,
 						HASH(*first_hash_function) (void*),
@@ -103,7 +103,9 @@ HT_INT HashTableAdd(HashTable* table,
 
 	obj->key_size = key_size;
 
-	while (HT_OBJ(table, hash)) hash = (hash + second_hash) % table->size;
+	while (HT_OBJ(table, hash)) 
+		hash = hash + second_hash;
+	
 
 	table->table[hash] = obj;
 	table->objects++;
@@ -151,6 +153,9 @@ void* HashTableRemove(HashTable* table,
 
 	if (HT_UNDERFLOW(table))
 		HashTableResize(table, HT_UNDERFLOW_NEW_SIZE(table));
+
+	table->deleted++;
+	table->objects--;
 
 	return data;
 }
