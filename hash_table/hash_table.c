@@ -133,12 +133,12 @@ void* HashTableRemove(HashTable* table,
 		hash = (hash + second_hash) % table->size;
 	}
 
-	if (!obj) return NULL;
+	if (!obj || !obj->key) return NULL;
 
 	void* data = obj->data;
 
 	free(obj->key);
-	free(obj);
+	obj->key = NULL;
 
 	if (HT_UNDERFLOW(table))
 		HashTableResize(table, HT_UNDERFLOW_NEW_SIZE(table));
@@ -171,12 +171,52 @@ void* HashTableFind(HashTable* table,
 		hash = (hash + second_hash) % table->size;
 	}
 
-	if (!obj) return NULL;
+	if (!obj || obj->key == NULL) return NULL;
 
 	void* data = obj->data;
 
 	return data;
 }
+
+HT_INT HashTableResize(HashTable* table, HT_INT new_size) {
+
+	if (!table) return 0;
+
+	new_size = is_prime(new_size) ? new_size : next_prime(new_size);
+
+	if (new_size < MIN_TABLE_SIZE) return 0;
+
+	/*
+	* We can't get less space in the table than is necessary for storing data.
+	* So, if $table->objects / $new_size >= $table->max_occupancy
+	*		overflow will occur after the table is reduced!!!
+	*/
+
+	if ((float)table->objects / new_size >= table->max_occupancy) return 0;
+
+	if (table->size == new_size) return 0;
+
+	HTObject** old_tbl = table->table;
+
+	HTObject** new_tbl = calloc(new_size, sizeof(HTObject*));
+	if (!new_tbl) return 0;
+	table->table = new_tbl;
+	HT_INT old_size = table->size;
+	table->size = new_size;
+
+	for (HT_INT cell = 0; cell < old_size; cell++) {
+		if (!old_tbl[cell]) continue;
+		if (!old_tbl[cell]->key) free(old_tbl[cell]);
+		else {
+			HashTableAdd(table, old_tbl[cell]->key, old_tbl[cell]->key_size, old_tbl[cell]->data);
+			free(old_tbl[cell]->key);
+		}
+	}
+
+	return new_size;
+}
+
+
 
 int main() {
 	int n = 0;
@@ -187,6 +227,7 @@ int main() {
 }
 
 #undef HT_OVERFLOW
+#undef HT_UNDERFLOW
 #undef MIN
 #undef MAX
 #undef _CRT_SECURE_NO_WARNINGS
