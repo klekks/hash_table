@@ -17,7 +17,7 @@ HT_INT is_prime(HT_INT N) {
 	if (N == 2 || N == 3 || N == 5 || N == 7) return 1;
 	if (N % 2 == 0) return 0;
 
-	for (HT_INT i = 9; i * i < N; i += 2)
+	for (HT_INT i = 3; i * i < N; i += 2)
 		if (N % i == 0) return 0;
 
 	return 1;
