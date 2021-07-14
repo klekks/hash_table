@@ -206,8 +206,10 @@ HT_INT HashTableResize(HashTable* table, HT_INT new_size) {
 	table->table = new_tbl;
 	HT_INT old_size = table->size;
 	table->size = new_size;
+	table->deleted = 0;
+	table->objects = 0;
 
-	printf("RESIZE: NEW SIZE %d OLD SIZE %d", new_size, old_size);
+	printf("RESIZE: NEW SIZE %d OLD SIZE %d\n", new_size, old_size);
 	for (HT_INT cell = 0; cell < old_size; cell++) {
 		if (!old_tbl[cell]) continue;
 		if (!old_tbl[cell]->key) free(old_tbl[cell]);
