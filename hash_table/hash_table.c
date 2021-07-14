@@ -216,6 +216,33 @@ HT_INT HashTableResize(HashTable* table, HT_INT new_size) {
 	return new_size;
 }
 
+#define MAX_DEFAULT_HASH_DEPTH 19
+HASH DEFAULT_FIRST_HASH(void* obj, HT_INT size) {
+	HASH hash = 1, base = 0, tbase = 257;
+	HT_INT depth = MIN(size, MAX_DEFAULT_HASH_DEPTH);
+
+	for (int i = 0; i < depth; i++) {
+		base = (i + 1) * tbase;
+		hash += *((char*)obj) * base;
+		((char*)obj)++;
+	}
+
+	return hash;
+}
+
+
+HASH DEFAULT_SECOND_HASH(void* obj, HT_INT size) {
+	HASH hash = 1, base = 0, tbase = 19;
+	HT_INT depth = MIN(size, MAX_DEFAULT_HASH_DEPTH);
+
+	for (int i = 0; i < depth; i++) {
+		base = (i + 1) * tbase;
+		hash += *((char*)obj) * base;
+		((char*)obj)++;
+	}
+
+	return hash;
+}
 
 
 int main() {
