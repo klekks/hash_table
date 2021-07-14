@@ -60,7 +60,7 @@ HashTable* NewHashTable(HT_INT size,
 	if (!first_hash_function) table->first_hash_function = DEFAULT_FIRST_HASH;
 	else table->first_hash_function = first_hash_function;
 
-	if (!second_hash_function) table->first_hash_function = DEFAULT_SECOND_HASH;
+	if (!second_hash_function) table->second_hash_function = DEFAULT_SECOND_HASH;
 	else table->second_hash_function = second_hash_function;
 
 	if (max_occupancy > OCCUPANCY_MAX || max_occupancy < OCCUPANCY_MIN)
@@ -246,10 +246,26 @@ HASH DEFAULT_SECOND_HASH(void* obj, HT_INT size) {
 
 
 int main() {
-	int n = 0;
+	int n = 0, *t;
+	HASH h;
+	char key;
+	HashTable* table = NewHashTable(0, 0, 0, 0);
 	while (1) {
-		scanf("%d", &n);
-		printf("%d\n", next_prime(n));
+		scanf("%c %d", &key, &n);
+		switch (key) {
+		case 'a': 
+			h = HashTableAdd(table, &n, sizeof(n), n);
+			printf("%u\n", h);
+			break;
+		case 'r':
+			t = HashTableRemove(table, &n, sizeof(n));
+			printf("%d %d\n", t, t ? *t : t);
+			break;
+		case 'f':
+			t = HashTableFind(table, &n, sizeof(n));
+			printf("%d %d\n", t, t ? *t : t);
+			break;
+		}
 	}
 }
 
