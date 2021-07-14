@@ -111,50 +111,7 @@ HT_INT HashTableAdd(HashTable* table,
 	return hash;
 }
 
-void* HashTableRemove(HashTable* table,
-					void* key,
-					HT_INT key_size) {
-
-	if (!table || !key || !key_size) return NULL;
-
-	HASH first_hash = table->first_hash_function(key, key_size),
-		 second_hash = table->second_hash_function(key, key_size);
-
-	HASH hash = first_hash;
-	HTObject* obj = NULL;
-
-	while (1) {
-		if (!HT_OBJ(table, hash)) return NULL;
-		else
-			if (HT_OBJ(table, hash)->first_hash == first_hash &&
-				HT_OBJ(table, hash)->second_hash == second_hash &&
-				HT_OBJ(table, hash)->key_size == key_size) 
-				if (!memcmp(HT_OBJ(table, hash)->key, key, key_size)) {
-					obj = HT_OBJ(table, hash);
-					break;
-				}
-		hash = (hash + second_hash) % table->size;
-	}
-
-	if (!obj || !obj->key) return NULL;
-
-	void* data = obj->data;
-
-	free(obj->key);
-	obj->key = NULL;
-
-	if (HT_UNDERFLOW(table))
-		HashTableResize(table, HT_UNDERFLOW_NEW_SIZE(table));
-
-	return data;
-}
-
-void* HashTableFind(HashTable* table,
-	void* key,
-	HT_INT key_size) {
-
-	if (!table || !key || !key_size) return NULL;
-
+HTObject* _HashTableFindObject(HashTable *table, void* key, HT_INT key_size) {
 	HASH first_hash = table->first_hash_function(key, key_size),
 		second_hash = table->second_hash_function(key, key_size);
 
@@ -173,6 +130,36 @@ void* HashTableFind(HashTable* table,
 				}
 		hash = (hash + second_hash) % table->size;
 	}
+
+	if (!obj || !obj->key) return NULL;
+}
+
+void* HashTableRemove(HashTable* table,
+					void* key,
+					HT_INT key_size) {
+
+	if (!table || !key || !key_size) return NULL;
+
+	HTObject* obj = _HashTableFindObject(table, key, key_size);
+
+	void* data = obj->data;
+
+	free(obj->key);
+	obj->key = NULL;
+
+	if (HT_UNDERFLOW(table))
+		HashTableResize(table, HT_UNDERFLOW_NEW_SIZE(table));
+
+	return data;
+}
+
+void* HashTableFind(HashTable* table,
+	void* key,
+	HT_INT key_size) {
+
+	if (!table || !key || !key_size) return NULL;
+
+	HTObject* obj = _HashTableFindObject(table, key, key_size);
 
 	if (!obj || obj->key == NULL) return NULL;
 
