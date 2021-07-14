@@ -34,7 +34,7 @@ HT_INT next_prime(HT_INT N) {
 }
 
 #define HT_OVERFLOW(T) (((float)T->objects + T->deleted) / T->size) > T->max_occupancy
-#define HT_OVERFLOW_NEW_SIZE(T) (T->size - T->deleted) * 2
+#define HT_OVERFLOW_NEW_SIZE(T) next_prime(T->objects * 2)
 
 #define HT_UNDERFLOW(T) ((float)T->objects / T->size) < (T->max_occupancy / 2)
 #define HT_UNDERFLOW_NEW_SIZE(T) next_prime(T->objects / 2 + 1)
