@@ -67,6 +67,8 @@ HashTable* NewHashTable(HT_INT size,
 		table->max_occupancy = DEFAULT_OCCUPANCY;
 	else table->max_occupancy = max_occupancy;
 
+	table->size = size;
+
 	return table;
 }
 
