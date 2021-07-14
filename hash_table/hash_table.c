@@ -106,6 +106,7 @@ HT_INT HashTableAdd(HashTable* table,
 	while (HT_OBJ(table, hash)) hash = (hash + second_hash) % table->size;
 
 	table->table[hash] = obj;
+	table->objects++;
 
 	return hash;
 }
@@ -243,7 +244,7 @@ HASH DEFAULT_SECOND_HASH(void* obj, HT_INT size) {
 		((char*)obj)++;
 	}
 
-	return hash;
+	return hash % 2 ? hash + 1 : hash;
 }
 
 
