@@ -41,8 +41,10 @@ HT_INT next_prime(HT_INT N) {
 
 /*
 * The table should be reduced if there are more deleted elements than real ones
+* or
+* if there are too few real objects (75% of max_occupancy)
 */
-#define HT_UNDERFLOW(T) T->deleted > T->objects
+#define HT_UNDERFLOW(T) T->deleted > T->objects || T->objects / T->size <= 0.75f * T->max_occupancy
 #define HT_UNDERFLOW_NEW_SIZE(T) next_prime(T->objects / 2 + 1)
 
 #define HT_OBJ(T, H) T->table[H % T->size]
