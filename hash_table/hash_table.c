@@ -10,8 +10,8 @@
 #include <malloc.h>
 #include <string.h> // memcmp
 
-#define MIN(A, B) A > B ? B : A
-#define MAX(A, B) A < B ? B : A
+#define MIN(A, B) (A > B ? B : A)
+#define MAX(A, B) (A < B ? B : A)
 
 HT_INT is_prime(HT_INT N) {
 	if (N == 2 || N == 3 || N == 5 || N == 7) return 1;
@@ -36,18 +36,18 @@ HT_INT next_prime(HT_INT N) {
 /*
 * The table should be enlarged if there are at least half of the filled cells
 */
-#define HT_OVERFLOW(T) (((float)T->objects + T->deleted) / T->size) > T->max_occupancy
-#define HT_OVERFLOW_NEW_SIZE(T) (T->size - T->deleted) * 2
+#define HT_OVERFLOW(T) ((((float)T->objects + T->deleted) / T->size) > T->max_occupancy)
+#define HT_OVERFLOW_NEW_SIZE(T) ((T->size - T->deleted) * 2)
 
 /*
 * The table should be reduced if there are more deleted elements than real ones
 * or
 * if there are too few real objects (75% of max_occupancy)
 */
-#define HT_UNDERFLOW(T) T->deleted > T->objects || T->objects / T->size <= 0.75f * T->max_occupancy
-#define HT_UNDERFLOW_NEW_SIZE(T) next_prime(T->objects / 2 + 1)
+#define HT_UNDERFLOW(T) (T->deleted > T->objects || T->objects / T->size <= 0.75f * T->max_occupancy)
+#define HT_UNDERFLOW_NEW_SIZE(T) (next_prime(T->objects / 2 + 1))
 
-#define HT_OBJ(T, H) T->table[H % T->size]
+#define HT_OBJ(T, H) (T->table[H % T->size])
 
 HashTable* NewHashTable(HT_INT size,
 						HASH(*first_hash_function) (void*),
